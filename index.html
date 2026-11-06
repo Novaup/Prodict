@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Prédicteur football</title>
+<style>
+:root{--bg:#f5f6fa;--card:#fff;--tx:#14182a;--mu:#5f6580;--ac:#1d4ed8;--bd:#dde1ee;--a:#1d4ed8;--b:#e11d48;--dr:#8b93ad;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1222;--card:#181d33;--tx:#eef0fa;--mu:#9aa1c0;--ac:#6d93ff;--bd:#2a3150;--a:#6d93ff;--b:#ff6b8a;--dr:#6b7392;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1222;--card:#181d33;--tx:#eef0fa;--mu:#9aa1c0;--ac:#6d93ff;--bd:#2a3150;--a:#6d93ff;--b:#ff6b8a;--dr:#6b7392;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:860px;margin:0 auto;padding:16px 12px 40px}
+h1{font-size:1.4rem;margin:.1em 0 .2em}h2{font-size:1rem;margin:14px 0 4px}.sub,.mu{color:var(--mu);font-size:.85rem}
+nav{display:flex;gap:6px;margin:10px 0;border-bottom:1px solid var(--bd);padding-bottom:10px;overflow-x:auto}
+nav a{padding:8px 13px;border-radius:20px;text-decoration:none;color:var(--mu);font-weight:600;white-space:nowrap}nav a.on{background:var(--ac);color:#fff}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px;margin-top:10px}
+.pills{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
+.pills button{flex:0 0 auto;padding:7px 13px;border:1px solid var(--bd);border-radius:18px;background:var(--card);color:var(--tx);font:inherit;cursor:pointer}.pills button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.day{font-weight:700;margin:16px 0 6px;text-transform:capitalize}
+.m{display:grid;grid-template-columns:48px 1fr 64px 1fr;gap:6px;align-items:center;background:var(--card);border:1px solid var(--bd);border-radius:11px;padding:10px;margin-top:6px}
+.m.k{cursor:pointer}.m.k:hover{border-color:var(--ac)}
+.m .h{text-align:right;font-weight:600}.m .aw{font-weight:600}.m .sc{text-align:center;font-weight:700}.m .tm{color:var(--mu);font-size:.8rem}
+.go{color:var(--ac);font-size:.78rem;font-weight:600}
+.ta{color:var(--a)}.tb{color:var(--b)}
+.names{display:flex;justify-content:space-between;font-weight:600;gap:8px}
+.score{text-align:center;font-size:2.4rem;font-weight:700;letter-spacing:.04em;margin:2px 0}
+.bar{display:flex;height:22px;border-radius:7px;overflow:hidden;margin:8px 0;font-size:.75rem;color:#fff}.bar div{display:flex;align-items:center;justify-content:center}
+table{width:100%;border-collapse:collapse;margin-top:6px}td,th{padding:7px 4px;border-bottom:1px solid var(--bd);text-align:center}th{font-size:.75rem;color:var(--mu);font-weight:600}td:nth-child(2){color:var(--mu);font-size:.85rem}
+.st td:nth-child(2){color:var(--tx);font-size:inherit;text-align:left}
+.wrap{overflow-x:auto}.chips span{display:inline-block;background:var(--bg);border:1px solid var(--bd);border-radius:20px;padding:3px 10px;margin:3px 4px 0 0;font-size:.82rem}
+.f{display:inline-flex;gap:3px;vertical-align:middle}.f i{width:17px;height:17px;border-radius:4px;font:700 .65rem/17px system-ui;text-align:center;color:#fff;font-style:normal}.fv{background:#16a34a}.fn{background:#8b93ad}.fd{background:#dc2626}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;font-size:.85rem}
+button.sm{padding:6px 11px;font-size:.8rem;border:0;border-radius:8px;background:var(--ac);color:#fff;cursor:pointer}.del{background:#b91c1c!important}
+.real{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:8px 0}.real input{width:56px;padding:6px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx)}
+.ok{color:#16a34a;font-weight:600}.ko{color:#dc2626;font-weight:600}details{margin:8px 0}summary{cursor:pointer;color:var(--ac)}
+.sum{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.note{color:var(--mu);font-size:.78rem;margin-top:14px}
+@media(max-width:520px){.m{grid-template-columns:40px 1fr 54px 1fr;font-size:.85rem;padding:8px 6px}}
+</style>
+</head>
+<body>
+<main>
+<h1>⚽ Football — Prédictions</h1>
+<p class="sub">Ligue des champions, Ligue 1 et Premier League · données au 6 novembre 2026 · heures en CET</p>
+<nav><a href="#calendrier" id="l1">📅 Calendrier</a><a href="#classement" id="l2">🏆 Classement</a><a href="#historique" id="l3">📊 Historique</a></nav>
+<div id="v1"><div class="pills" id="comps"></div><div class="pills" id="pills" style="margin-top:8px"></div><div id="cal"></div>
+<p class="note"><b>Comment ça marche :</b> cliquez sur un match à venir pour voir la prédiction. Le modèle part du niveau initial de chaque club (Elo estimé), puis l’ajuste avec les 4 premiers matchs réels de la saison : résultats pondérés par adversaire, buts marqués et encaissés (les plus récents comptent davantage, les scores extrêmes sont plafonnés), avantage du terrain et forme récente. Les scores viennent ensuite d’une loi de Poisson corrigée (Dixon-Coles). Aucun pronostic n’est garanti : le football garde une part d’imprévisible, et le modèle ignore blessures, suspensions, compositions et matchs de championnat.</p></div>
+<div id="v2" style="display:none"></div>
+<div id="v3" style="display:none"><h1>📊 Historique des prédictions</h1><p class="sub">Chaque prédiction ouverte est enregistrée ici (dans ce navigateur). Saisissez le score réel après le match pour mesurer la fiabilité.</p><div id="hl"></div></div>
+</main>
+<script>
+const TS="AEK|AEK Athens|1700;LSK|LASK|1660;BRU|Club Bruges|1790;AVL|Aston Villa|1840;BVB|Borussia Dortmund|1880;VIL|Villarreal|1800;POR|FC Porto|1820;MCI|Manchester City|1980;LIL|Lille|1780;BET|Real Betis|1790;RMA|Real Madrid|1960;INT|Inter Milan|1950;BAR|FC Barcelone|1960;FEY|Feyenoord|1760;STU|VfB Stuttgart|1790;VIK|Viking FK|1650;LIV|Liverpool|1930;ATM|Atlético de Madrid|1900;PSG|Paris Saint-Germain|1990;SLB|Slovan Bratislava|1620;SCP|Sporting CP|1850;GAL|Galatasaray|1790;NAP|Naples|1850;ARS|Arsenal|2030;FEN|Fenerbahçe|1770;ROM|AS Rome|1790;PSV|PSV Eindhoven|1820;SHA|Chakhtar Donetsk|1710;COM|Como 1907|1740;LEI|RB Leipzig|1830;BAY|Bayern Munich|2010;BOD|Bodø/Glimt|1740;MUN|Manchester United|1790;SAB|Sabah FC|1600;SLA|Slavia Prague|1700;LEN|RC Lens|1760";
+const F=`
+D 1 2026-09-08
+1845 AEK LSK 1-0
+1845 BRU AVL 2-3
+2100 BVB VIL 3-2
+2100 POR MCI 0-2
+2100 LIL BET 2-3
+2100 RMA INT 2-1
+D 1 2026-09-09
+1845 BAR FEY 5-1
+1845 STU VIK 3-1
+2100 LIV ATM 2-1
+2100 PSG SLB 6-1
+2100 SCP GAL 3-1
+2100 NAP ARS 0-1
+D 1 2026-09-10
+1845 FEN ROM 1-1
+1845 PSV SHA 1-1
+2100 COM LEI 4-1
+2100 BAY BOD 5-0
+2100 MUN SAB 4-0
+2100 SLA LEN 2-3
+D 2 2026-10-13
+1845 LEN SCP 0-2
+1845 SAB SLA 2-0
+2100 ARS LIL 3-0
+2100 ATM MUN 2-0
+2100 INT BRU 3-4
+2100 GAL BAR 1-4
+2100 LEI PSV 1-0
+2100 VIK BAY 3-3
+2100 VIL NAP 3-1
+D 2 2026-10-14
+1845 FEY COM 3-2
+1845 LSK LIV 3-6
+2100 ROM RMA 3-4
+2100 AVL FEN 6-0
+2100 SHA AEK 3-1
+2100 BOD BVB 1-0
+2100 MCI PSG 2-4
+2100 BET POR 3-2
+2100 SLB STU 0-3
+D 3 2026-10-20
+1845 FEN SLA 2-2
+1845 SAB BVB 1-2
+2100 ROM SLB 4-0
+2100 POR PSV 0-1
+2100 LIV VIL 4-3
+2100 MCI AEK 5-1
+2100 PSG BAR 4-2
+2100 NAP BOD 4-3
+2100 STU ATM 1-1
+D 3 2026-10-21
+1845 COM MUN 4-1
+1845 LIL GAL 2-4
+2100 AVL VIK 3-1
+2100 BRU LEN 3-0
+2100 BAY ARS 2-2
+2100 INT SHA 1-0
+2100 RMA LEI 4-1
+2100 BET FEY 1-0
+2100 SCP LSK 2-3
+D 4 2026-11-03
+1845 SHA SCP 0-1
+1845 GAL STU 2-0
+2100 ATM BAY 0-2
+2100 BAR AVL 3-0
+2100 FEY INT 0-3
+2100 BOD LIL 0-0
+2100 LSK SLB 4-0
+2100 MUN ROM 3-2
+2100 VIL PSG 0-6
+D 4 2026-11-04
+1845 AEK RMA 2-3
+1845 FEN LIV 3-2
+2100 BVB BET 2-1
+2100 POR NAP 4-1
+2100 PSV BRU 1-2
+2100 LEI MCI 2-3
+2100 LEN COM 1-9
+2100 SLA ARS 1-2
+2100 VIK SAB 4-1
+D 5 2026-11-24
+1845 BOD LSK
+1845 GAL AVL
+2100 ARS BVB
+2100 COM AEK
+2100 FEY POR
+2100 MCI NAP
+2100 LEI LEN
+2100 RMA PSV
+2100 SLB BET
+D 5 2026-11-25
+1845 SAB BAR
+1845 SLA VIL
+2100 ATM VIK
+2100 BRU LIV
+2100 INT STU
+2100 SHA FEN
+2100 LIL BAY
+2100 PSG ROM
+2100 SCP MUN
+D 6 2026-12-08
+1845 VIK FEY
+1845 VIL SAB
+2100 AEK GAL
+2100 ROM SCP
+2100 AVL PSG
+2100 BAR MCI
+2100 BAY SLA
+2100 MUN LEI
+2100 NAP BRU
+D 6 2026-12-09
+1845 BET COM
+1845 SLB SHA
+2100 ARS RMA
+2100 BVB INT
+2100 LSK FEN
+2100 LIV POR
+2100 LEN BOD
+2100 PSV ATM
+2100 STU LIL
+D 7 2027-01-19
+1845 BOD ATM
+1845 GAL FEY
+2100 AEK ROM
+2100 AVL BVB
+2100 INT LIV
+2100 POR SLA
+2100 LIL SLB
+2100 RMA LSK
+2100 STU BRU
+D 7 2027-01-20
+1845 FEN VIL
+1845 SAB NAP
+2100 COM PSG
+2100 MUN BAY
+2100 LEI SHA
+2100 LEN MCI
+2100 BET ARS
+2100 SCP BAR
+2100 VIK PSV
+D 8 2027-01-27
+2100 ARS SAB
+2100 ROM LIL
+2100 ATM FEN
+2100 BVB AEK
+2100 BRU BOD
+2100 BAY BET
+2100 BAR COM
+2100 SHA RMA
+2100 FEY LEI
+2100 LSK POR
+2100 LIV LEN
+2100 MCI SCP
+2100 PSG GAL
+2100 PSV STU
+2100 SLA AVL
+2100 NAP VIK
+2100 VIL MUN
+2100 SLB INT`;
+const $=id=>document.getElementById(id),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const T={};TS.split(";").forEach(s=>{const a=s.split("|");T[a[0]]={c:a[0],n:a[1],e0:+a[2],e:+a[2],h:[],pts:0,gp:0,gf:0,ga:0,w:0,d:0,l:0}});
+const M=[];let _md,_dt;
+F.trim().split("\n").forEach(l=>{const p=l.trim().split(" ");if(p[0]=="D"){_md=+p[1];_dt=p[2];return}
+  M.push({id:M.length,md:_md,date:_dt,t:p[0].slice(0,2)+":"+p[0].slice(2),h:p[1],a:p[2],s:p[3]?p[3].split("-").map(Number):null})});
+/* --- état des équipes : Elo mis à jour match après match + statistiques --- */
+M.filter(m=>m.s).forEach(m=>{
+  const A=T[m.h],B=T[m.a],[x,y]=m.s,ex=1/(1+Math.pow(10,(B.e-A.e-60)/400)),S=x>y?1:x==y?.5:0;
+  const dl=30*(1+.25*Math.min(Math.abs(x-y),5))*(S-ex);A.e+=dl;B.e-=dl;
+  [[A,x,y],[B,y,x]].forEach(([t,f,a])=>{t.h.push({f,a});t.gp++;t.gf+=f;t.ga+=a;if(f>a){t.w++;t.pts+=3}else if(f==a){t.d++;t.pts++}else t.l++});
+});
+Object.values(T).forEach(t=>{
+  const h=t.h.slice().reverse();let sw=0,sf=0,sa=0;
+  h.forEach((x,i)=>{const w=Math.pow(.8,i);sw+=w;sf+=w*Math.min(x.f,5);sa+=w*Math.min(x.a,5)});
+  const g0=1.45*Math.exp((t.e0-1780)/500),c0=1.45*Math.exp(-(t.e0-1780)/500),k=5;
+  t.g=(g0*k+sf)/(k+sw);t.c=(c0*k+sa)/(k+sw);
+  const last=t.h.slice(-4);let p=0;last.forEach(x=>p+=x.f>x.a?3:x.f==x.a?1:0);
+  t.ff=last.length?1+(p/(3*last.length)-.5)*.08:1;
+  t.p=clamp(50+(t.e-1780)/12,36,66);
+  t.fm=t.h.slice(-4).map(x=>x.f>x.a?"V":x.f==x.a?"N":"D");
+});
+const fch=a=>`<span class="f">${a.map(c=>`<i class="f${c.toLowerCase()}">${c}</i>`).join("")}</span>`;
+const fact=n=>n<2?1:n*fact(n-1),pois=(l,k)=>Math.exp(-l)*Math.pow(l,k)/fact(k);
+/* --- moteur de prédiction --- */
+function pred(m){
+  const D0=m.k?DL[m.k]:null,A=D0?D0.t[m.h]:T[m.h],B=D0?D0.t[m.a]:T[m.a],avg=D0?D0.avg:1.45,N=9,rho=-.08;
+  const L=(X,Y,hm)=>clamp(D0?avg*(X.g/avg)*(Y.c/avg)*hm*X.ff:avg*Math.pow(X.g/avg,.5)*Math.pow(Y.c/avg,.5)*Math.exp((X.e-Y.e)/2200)*hm*X.ff,.25,4);
+  const la=L(A,B,1.12),lb=L(B,A,.9),Mx=[];let tot=0;
+  for(let i=0;i<N;i++){Mx[i]=[];for(let j=0;j<N;j++){let p=pois(la,i)*pois(lb,j),t=1;
+    if(i==0&&j==0)t=1-la*lb*rho;else if(i==0&&j==1)t=1+la*rho;else if(i==1&&j==0)t=1+lb*rho;else if(i==1&&j==1)t=1-rho;
+    Mx[i][j]=p*t;tot+=p*t}}
+  let w=0,d=0,l=0,o25=0,bt=0,csa=0,csb=0,best=[0,0,0],list=[];
+  for(let i=0;i<N;i++)for(let j=0;j<N;j++){const p=Mx[i][j]/tot;
+    if(i>j)w+=p;else if(i==j)d+=p;else l+=p;if(i+j>2)o25+=p;if(i&&j)bt+=p;if(j==0)csa+=p;if(i==0)csb+=p;
+    list.push([i,j,p]);if(p>best[2])best=[i,j,p]}
+  list.sort((x,y)=>y[2]-x[2]);
+  const oc=w>=d&&w>=l?"A":d>=l?"N":"B";
+  best=list.find(x=>res(x[0],x[1])==oc)||best;
+  const posA=clamp(A.p/(A.p+B.p)*100+1,30,70),posB=100-posA;
+  const sh=(x,pos)=>Math.max(3,x*8+(pos-50)*.1),sA=sh(la,posA),sB=sh(lb,posB);
+  const cr=(s,pos)=>s*.37+(pos-50)*.04,fA=12.2-(posA-50)*.06,fB=12.2-(posB-50)*.06;
+  const S=[["Buts attendus (xG)",la.toFixed(2),lb.toFixed(2)],["Possession",posA.toFixed(0)+" %",posB.toFixed(0)+" %"],["Tirs",Math.round(sA),Math.round(sB)],["Tirs cadrés",Math.round(sA*.36),Math.round(sB*.36)],["Corners",Math.round(cr(sA,posA)),Math.round(cr(sB,posB))],["Fautes commises",Math.round(fA),Math.round(fB)],["Coups francs obtenus",Math.round(fB),Math.round(fA)],["Cartons jaunes",(fA*.17).toFixed(1),(fB*.17).toFixed(1)],["Hors-jeu",(1.6+la*.7).toFixed(1),(1.6+lb*.7).toFixed(1)],["Clean sheet",(csb*100).toFixed(0)+" %",(csa*100).toFixed(0)+" %"]];
+  const mk=[["Victoire "+A.n,w],["Match nul",d],["Victoire "+B.n,l],[A.n+" ou nul",w+d],[B.n+" ou nul",l+d],["Plus de 2,5 buts",o25],["Moins de 2,5 buts",1-o25],["Les deux équipes marquent",bt],["Une équipe ne marque pas",1-bt]].sort((x,y)=>y[1]-x[1]).slice(0,3);
+  return{A,B,la,lb,w,d,l,o25,bt,best,list,S,mk};
+}
+const pc=x=>Math.round(x*100);
+function panel(m,P){
+  const mx=Math.max(P.w,P.d,P.l),conf=mx>=.6?"Élevée":mx>=.45?"Moyenne":"Faible — match ouvert";
+  return `<div class="card"><div class="names"><span class="ta">${P.A.n}</span><span class="tb" style="text-align:right">${P.B.n}</span></div>
+  <div class="score">${P.best[0]} – ${P.best[1]}</div><div class="mu" style="text-align:center">Score le plus probable (${(P.best[2]*100).toFixed(0)} %) · confiance : ${conf}</div>
+  <div class="bar"><div style="width:${pc(P.w)}%;background:var(--a)">${pc(P.w)}%</div><div style="width:${pc(P.d)}%;background:var(--dr)">${pc(P.d)}%</div><div style="width:${pc(P.l)}%;background:var(--b)">${pc(P.l)}%</div></div>
+  <div class="two"><div>Forme : ${P.A.fm.length?fch(P.A.fm):P.A.ft}<br><span class="mu">${P.A.e?"Elo "+Math.round(P.A.e)+" · ":""}${P.A.gf} BP / ${P.A.ga} BC</span></div><div style="text-align:right">Forme : ${P.B.fm.length?fch(P.B.fm):P.B.ft}<br><span class="mu">${P.B.e?"Elo "+Math.round(P.B.e)+" · ":""}${P.B.gf} BP / ${P.B.ga} BC</span></div></div>
+  <h2>Paris les plus probables</h2><div class="chips">${P.mk.map(x=>`<span>${x[0]} : ${pc(x[1])} % (cote juste ${(1/x[1]).toFixed(2)})</span>`).join("")}</div>
+  <h2>Autres scores probables</h2><div class="chips">${P.list.slice(1,6).map(x=>`<span>${x[0]}–${x[1]} (${(x[2]*100).toFixed(1)} %)</span>`).join("")}</div>
+  <h2>Statistiques prévues</h2><div class="wrap"><table>${P.S.map(r=>`<tr><td class="ta"><b>${r[1]}</b></td><td>${r[0]}</td><td class="tb"><b>${r[2]}</b></td></tr>`).join("")}</table></div></div>`;
+}
+/* --- championnats nationaux (classement + forme des 6 derniers matchs, source : foot-direct.com au 6 nov. 2026) --- */
+const DS={
+ L1:{n:"🇫🇷 Ligue 1",j:10,t:"PSG|Paris Saint-Germain|6,2,1|21,10|15,16,6;LIL|Lille|5,3,1|12,6|11,6,4;LYO|Lyon|5,2,2|15,7|10,9,5;PFC|Paris FC|5,2,2|16,10|12,13,10;REN|Rennes|5,1,3|20,19|9,13,14;MAR|Marseille|5,0,4|20,13|12,14,8;MON|Monaco|4,3,2|12,10|6,7,9;NIC|Nice|4,2,3|13,12|12,12,8;LEN|Lens|4,1,4|16,13|9,8,7;BRE|Brest|3,3,3|16,12|7,10,7;LOR|Lorient|3,3,3|7,8|10,4,4;TOU|Toulouse|2,4,3|12,13|8,8,7;STR|Strasbourg|3,1,5|17,19|4,9,12;AUX|Auxerre|3,1,5|13,23|10,9,12;ANG|Angers|2,2,5|9,17|5,5,12;TRO|Troyes|2,2,5|7,16|4,3,9;MAN|Le Mans|1,4,4|11,18|5,6,12;HAV|Le Havre|0,2,7|9,20|1,7,16",f:`2026-11-06 2045 TOU STR
+2026-11-07 1715 AUX PFC
+2026-11-07 2045 PSG TRO
+2026-11-08 1500 REN LIL
+2026-11-08 1715 MAN MON
+2026-11-08 1715 BRE LYO
+2026-11-08 1715 HAV LOR
+2026-11-08 1715 ANG NIC
+2026-11-08 2045 LEN MAR`},
+ PL:{n:"🏴 Premier League",j:10,t:"ARS|Arsenal|8,0,1|14,5|15,8,5;MCI|Manchester City|7,0,2|20,10|12,13,8;BHA|Brighton|6,1,2|24,7|13,12,3;CHE|Chelsea|5,1,3|19,15|9,10,8;LIV|Liverpool|4,3,2|11,9|12,7,5;BRF|Brentford|3,5,1|16,9|9,11,7;EVE|Everton|3,4,2|9,9|8,6,8;BOU|Bournemouth|3,3,3|14,13|10,10,8;TOT|Tottenham|3,3,3|10,10|11,10,5;AVL|Aston Villa|3,3,3|10,13|12,9,6;HUL|Hull City|2,5,2|11,10|4,8,10;LEE|Leeds|2,5,2|9,8|6,6,6;NEW|Newcastle|3,2,4|12,15|6,6,11;IPS|Ipswich|3,2,4|14,18|5,7,10;FUL|Fulham|2,3,4|9,11|8,7,7;COV|Coventry|3,0,6|9,16|9,9,7;MUN|Manchester United|1,4,4|10,15|3,3,9;CRY|Crystal Palace|2,1,6|9,21|4,5,13;NFO|Nottingham Forest|1,3,5|6,12|2,2,8;SUN|Sunderland|1,2,6|7,17|1,4,14",f:`2026-11-06 2100 EVE COV
+2026-11-07 1330 LEE TOT
+2026-11-07 1600 ARS HUL
+2026-11-07 1600 FUL NEW
+2026-11-07 1830 NFO MCI
+2026-11-08 1500 SUN CHE
+2026-11-08 1500 BHA BRF
+2026-11-08 1500 IPS BOU
+2026-11-08 1500 CRY LIV
+2026-11-08 1730 MUN AVL`}};
+const DL={};
+Object.keys(DS).forEach(k=>{const S=DS[k],t={};let gf=0,P=0;
+  S.t.split(";").forEach(s=>{const a=s.split("|"),r=a[2].split(",").map(Number),g=a[3].split(",").map(Number),f=a[4].split(",").map(Number);
+    t[a[0]]={n:a[1],w:r[0],d:r[1],l:r[2],gf:g[0],ga:g[1],P:r[0]+r[1]+r[2],pts:3*r[0]+r[1],fp:f[0],fgf:f[1],fga:f[2]};gf+=g[0];P+=r[0]+r[1]+r[2]});
+  const avg=gf/P;
+  Object.values(t).forEach(x=>{x.g=(x.gf+.6*x.fgf+4*avg)/(x.P+7.6);x.c=(x.ga+.6*x.fga+4*avg)/(x.P+7.6);x.ff=1+(x.fp/18-.5)*.1;
+    x.p=clamp(50+9*Math.log(x.g/x.c),38,64);x.fm=[];x.ft=x.fp+" pts sur 18 (6 derniers)";x.e=null});
+  DL[k]={t,avg,M:S.f.trim().split("\n").map((l,i)=>{const p=l.trim().split(" ");return{u:k+i,k,md:S.j,date:p[0],t:p[1].slice(0,2)+":"+p[1].slice(2),h:p[2],a:p[3],s:null}})};
+});
+M.forEach(m=>m.u="U"+m.id);
+const ALL={};[...M,...Object.values(DL).flatMap(d=>d.M)].forEach(m=>ALL[m.u]=m);
+const nm=(m,s)=>(m.k?DL[m.k].t:T)[m[s]].n;
+/* --- calendrier --- */
+let comp="UCL",cur=(M.find(m=>!m.s)||{md:1}).md;
+const fd=d=>new Date(d+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+const compBtns=()=>[["UCL","🏆 Ligue des champions"],...Object.keys(DS).map(k=>[k,DS[k].n])].map(([k,n])=>`<button class="${k==comp?"on":""}" data-k="${k}">${n}</button>`).join("");
+function renderCal(){
+  $("comps").innerHTML=compBtns();
+  $("pills").innerHTML=comp=="UCL"?[1,2,3,4,5,6,7,8].map(i=>`<button class="${i==cur?"on":""}" data-i="${i}">J${i}</button>`).join(""):`<button class="on">Journée ${DS[comp].j}</button>`;
+  const Lm=comp=="UCL"?M.filter(m=>m.md==cur):DL[comp].M;
+  let h=comp=="UCL"?"":`<p class="sub" style="margin-top:8px">Prédictions fondées sur le classement, les buts marqués/encaissés et la forme des 6 derniers matchs (données au 6 novembre 2026).</p>`,last="";
+  Lm.forEach(m=>{
+    if(m.date!=last){h+=`<div class="day">${fd(m.date)}</div>`;last=m.date}
+    h+=`<div class="m ${m.s?"":"k"}" data-u="${m.u}"><span class="tm">${m.t}</span><span class="h">${nm(m,"h")}</span><span class="sc">${m.s?m.s[0]+" – "+m.s[1]:'<span class="go">Prédire</span>'}</span><span class="aw">${nm(m,"a")}</span></div><div id="pp${m.u}"></div>`});
+  $("cal").innerHTML=h;
+}
+$("comps").addEventListener("click",e=>{const b=e.target.closest("button");if(b){comp=b.dataset.k;renderCal()}});
+$("pills").addEventListener("click",e=>{const b=e.target.closest("button");if(b&&b.dataset.i){cur=+b.dataset.i;renderCal()}});
+$("cal").addEventListener("click",e=>{
+  const r=e.target.closest(".m.k");if(!r)return;const m=ALL[r.dataset.u],box=$("pp"+m.u);
+  if(box.innerHTML){box.innerHTML="";return}
+  const P=pred(m);box.innerHTML=panel(m,P);
+  saveH({id:m.u,c:m.k?DS[m.k].n:"Ligue des champions",md:m.md,dt:m.date,t:m.t,a:P.A.n,b:P.B.n,s:[P.best[0],P.best[1]],w:pc(P.w),n:pc(P.d),l:pc(P.l),u:pc(P.o25),y:pc(P.bt),S:P.S,d:new Date().toLocaleString("fr-FR",{dateStyle:"short",timeStyle:"short"}),r:null});
+});
+/* --- classement --- */
+function renderTab(){
+  let R,title,sub;
+  if(comp=="UCL"){R=Object.values(T).sort((a,b)=>b.pts-a.pts||(b.gf-b.ga)-(a.gf-a.ga)||b.gf-a.gf||b.e-a.e).map(t=>({n:t.n,P:t.gp,w:t.w,d:t.d,l:t.l,gf:t.gf,ga:t.ga,pts:t.pts,f:fch(t.fm)}));title="🏆 Ligue des champions — après la J4";sub="Top 8 : qualifiés directs · 9e–24e : barrages"}
+  else{R=Object.values(DL[comp].t).sort((a,b)=>b.pts-a.pts||(b.gf-b.ga)-(a.gf-a.ga)||b.gf-a.gf).map(t=>({n:t.n,P:t.P,w:t.w,d:t.d,l:t.l,gf:t.gf,ga:t.ga,pts:t.pts,f:t.fp+" pts"}));title=DS[comp].n+" — après la J9";sub="Forme = points sur les 6 derniers matchs (max 18)"}
+  $("v2").innerHTML=`<div class="pills">${compBtns()}</div><h1 style="margin-top:12px">${title}</h1><p class="sub">${sub}</p><div class="card wrap"><table class="st"><tr><th>#</th><th style="text-align:left">Équipe</th><th>J</th><th>V</th><th>N</th><th>D</th><th>Diff</th><th>Pts</th><th>Forme</th></tr>${R.map((t,i)=>`<tr><td>${i+1}</td><td>${t.n}</td><td>${t.P}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td><td>${t.gf-t.ga>0?"+":""}${t.gf-t.ga}</td><td><b>${t.pts}</b></td><td>${t.f}</td></tr>`).join("")}</table></div>`;
+}
+$("v2").addEventListener("click",e=>{const b=e.target.closest("button");if(b&&b.dataset.k){comp=b.dataset.k;renderTab()}});
+/* --- historique --- */
+const KEY="ucl_hist_v2";
+const loadH=()=>{try{return JSON.parse(localStorage.getItem(KEY))||[]}catch(e){return[]}};
+const putH=H=>{try{localStorage.setItem(KEY,JSON.stringify(H))}catch(e){}};
+function saveH(x){const H=loadH(),i=H.findIndex(y=>y.id==x.id);if(i>=0){x.r=H[i].r;H.splice(i,1)}H.unshift(x);putH(H.slice(0,200))}
+const res=(a,b)=>a>b?"A":a==b?"N":"B";
+function renderH(){
+  const H=loadH(),R=H.filter(x=>x.r),Ok=R.filter(x=>res(x.r[0],x.r[1])==res(x.s[0],x.s[1])),Ex=R.filter(x=>x.r[0]==x.s[0]&&x.r[1]==x.s[1]);
+  if(!H.length){$("hl").innerHTML='<div class="card">Aucune prédiction pour le moment. Ouvrez un match dans le calendrier pour l’enregistrer ici.</div>';return}
+  let h=`<div class="card sum"><div><b>${H.length}</b> prédiction(s)${R.length?` · bon résultat : <b>${Ok.length}/${R.length}</b> (${Math.round(100*Ok.length/R.length)} %) · score exact : <b>${Ex.length}</b>`:""}</div><button class="sm del" data-a="c">Tout effacer</button></div>`;
+  h+=H.map((x,i)=>{let bd="";if(x.r)bd=res(x.r[0],x.r[1])==res(x.s[0],x.s[1])?`<span class="ok">✔ ${x.r[0]==x.s[0]&&x.r[1]==x.s[1]?"Score exact":"Bon résultat"}</span>`:'<span class="ko">✘ Raté</span>';
+    return `<div class="card"><div class="names"><span class="ta">${x.a}</span><b>${x.s[0]} – ${x.s[1]}</b><span class="tb" style="text-align:right">${x.b}</span></div>
+    <div class="mu">${x.c||"Ligue des champions"} · J${x.md} · ${fd(x.dt)} ${x.t} · Victoire A ${x.w} % · Nul ${x.n} % · Victoire B ${x.l} % · +2,5 buts ${x.u} % · BTTS ${x.y} % · prédit le ${x.d}</div>
+    <div class="real">Score réel : <input type="number" min="0" id="ra${i}" value="${x.r?x.r[0]:""}"> – <input type="number" min="0" id="rb${i}" value="${x.r?x.r[1]:""}"> <button class="sm" data-a="r" data-i="${i}">Valider</button> ${bd}</div>
+    <details><summary>Statistiques prévues</summary><div class="wrap"><table>${x.S.map(r=>`<tr><td class="ta"><b>${r[1]}</b></td><td>${r[0]}</td><td class="tb"><b>${r[2]}</b></td></tr>`).join("")}</table></div></details>
+    <button class="sm del" data-a="d" data-i="${i}">Supprimer</button></div>`}).join("");
+  $("hl").innerHTML=h;
+}
+$("hl").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const H=loadH(),i=+b.dataset.i;
+  if(b.dataset.a=="d")H.splice(i,1);else if(b.dataset.a=="c"){if(!confirm("Effacer tout l’historique ?"))return;H.length=0}
+  else{const a=$("ra"+i).value,c=$("rb"+i).value;if(a===""||c==="")return;H[i].r=[+a,+c]}
+  putH(H);renderH()});
+/* --- navigation --- */
+function route(){const v=location.hash=="#classement"?2:location.hash=="#historique"?3:1;
+  [1,2,3].forEach(i=>{$("v"+i).style.display=i==v?"block":"none";$("l"+i).className=i==v?"on":""});
+  if(v==2)renderTab();if(v==3)renderH()}
+addEventListener("hashchange",route);renderCal();route();
+</script>
+</body>
+</html>
